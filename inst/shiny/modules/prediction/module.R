@@ -158,7 +158,7 @@ predictionServer <- function(id,
         }
       })
       
-      summaryTable <- getDbSummary(
+      summaryTable <- getDevSummary(
         con = con, 
         mySchema = resultDatabaseSettings$mySchema, 
         targetDialect = resultDatabaseSettings$targetDialect,

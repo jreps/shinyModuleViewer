@@ -22,7 +22,7 @@ server <- shiny::shinyServer(function(input, output, session) {
       
       addInfo(
         shinydashboard::menuItem(
-          "Data", 
+          text = "Data", 
           tabName = "Data", 
           icon = shiny::icon("database")
         ), 
@@ -31,7 +31,16 @@ server <- shiny::shinyServer(function(input, output, session) {
       
       addInfo(
         shinydashboard::menuItem(
-          "Prediction", 
+          text = "Prediction Diagnostic", 
+          tabName = "PredictionDiagnostic", 
+          icon = shiny::icon("stethoscope")
+        ), 
+        "PredictionDiagnostic"
+      ),
+      
+      addInfo(
+        shinydashboard::menuItem(
+          text = "Prediction", 
           tabName = "Prediction", 
           icon = shiny::icon("table")
         ), 
@@ -40,7 +49,7 @@ server <- shiny::shinyServer(function(input, output, session) {
       
       addInfo(
         shinydashboard::menuItem(
-          "Estimation", 
+          text = "Estimation", 
           tabName = "Estimation", 
           icon = shiny::icon("question")
         ), 
@@ -73,15 +82,17 @@ server <- shiny::shinyServer(function(input, output, session) {
   dataServer(id = 'data')
   
   # run the module when it is selected the first time only
-  viewPrediction <- shiny::reactiveVal(0)
+  runServer <- shiny::reactiveValues(
+    Prediction = 0,
+    PredictionDiagnostic = 0,
+    Estimation = 0
+  )
+  
   shiny::observeEvent(input$menu,{
     
-    if(input$menu == 'Prediction'){
-      newVal <- viewPrediction() + 1
-      viewPrediction(newVal)
-    }
-    
-    if(input$menu == 'Prediction' & viewPrediction()==1){ 
+    runServer[[input$menu]] <- runServer[[input$menu]] +1
+
+    if(input$menu == 'Prediction' & runServer[['Prediction']]==1){ 
       predictionServer(
         id = 'prediction', 
         resultDatabaseSettings = list(
@@ -96,10 +107,32 @@ server <- shiny::shinyServer(function(input, output, session) {
           
         ))
     }
+    
+    if(input$menu == 'PredictionDiagnostic' & runServer[['PredictionDiagnostic']]==1){
+      predictionDiagnosticServer(
+        id = 'predictionDiagnostic',
+        resultDatabaseSettings = list(
+          server = "/Users/jreps/Documents/andromeda/fileb08337dba1a0.sqlite",
+          targetDialect = 'sqlite',
+          mySchema = 'main',
+          myTableAppend =  ''
+        )
+      )
+    }
+    
+    if(input$menu == 'Estimation' & runServer[['Estimation']]==1){
+      estimationServer(
+        id = 'estimation'
+        )
+    }
+    
+    
   }
   )
   
-  estimationServer(id = 'estimation')
+  
+
+            
 
 }
 )

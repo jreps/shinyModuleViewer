@@ -21,7 +21,7 @@ editTar <- function(summaryTable){
 }
 
 
-getDbSummary <- function(con, mySchema, targetDialect, myTableAppend = '' ){
+getDevSummary <- function(con, mySchema, targetDialect, myTableAppend = '' ){
   ParallelLogger::logInfo("gettingDb summary")
   
   sql <- "SELECT distinct s.study_id, 

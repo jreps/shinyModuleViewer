@@ -18,6 +18,7 @@
 
 source("modules/estimation/module.R")
 source("modules/prediction/module.R")
+source("modules/predictionDiagnostics/module.R")
 source("modules/data/module.R")
 source("modules/about/module.R")
 
@@ -57,7 +58,12 @@ ui <- shinydashboard::dashboardPage(
         tabName = "Data",
         dataViewer('data')
       ),
-    
+      
+      shinydashboard::tabItem(
+        tabName = "PredictionDiagnostic",
+        predictionDiagnosticViewer('predictionDiagnostic')
+      ),
+      
       shinydashboard::tabItem(
         tabName = "Prediction",
         predictionViewer('prediction')
