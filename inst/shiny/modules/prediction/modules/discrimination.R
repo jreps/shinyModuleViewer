@@ -207,22 +207,58 @@ discriminationServer <- function(id, plpResult) {
       })
 
       shiny::observeEvent(input$rocHelp, {
-        showInfoBox("ROC Help", "html/rocHelp.html")
+        shiny::showModal(shiny::modalDialog(
+          title = "ROC Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/rocHelp.html", file.info("www/rocHelp.html")$size) )
+        ))
       })
       shiny::observeEvent(input$prcHelp, {
-        showInfoBox("PRC Help", "html/prcHelp.html")
+        shiny::showModal(shiny::modalDialog(
+          title = "PRC Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/prcHelp.html", file.info("www/prcHelp.html")$size) )
+        ))
       })
       shiny::observeEvent(input$f1Help, {
-        showInfoBox("F1 Score Plot Help", "html/f1Help.html")
+        shiny::showModal(shiny::modalDialog(
+          title = "F1 Score Plot Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/f1Help.html", file.info("www/f1Help.html")$size) )
+        ))
       })
       shiny::observeEvent(input$boxHelp, {
-        showInfoBox("Box Plot Help", "html/boxHelp.html")
+        shiny::showModal(shiny::modalDialog(
+          title = "Box Plot Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/boxHelp.html", file.info("www/boxHelp.html")$size) )
+        ))
       })
       shiny::observeEvent(input$predDistHelp, {
-        showInfoBox("Predicted Risk Distribution Help", "html/predDistHelp.html")
-      })
+        shiny::showModal(shiny::modalDialog(
+          title = "Predicted Risk Distribution Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/predDistHelp.html", file.info("www/predDistHelp.html")$size) )
+        ))
+       })
       shiny::observeEvent(input$prefDistHelp, {
-        showInfoBox("Preference Score Distribution Help", "html/prefDistHelp.html")
+        shiny::showModal(shiny::modalDialog(
+          title = "Preference Score Distribution Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/prefDistHelp.html", file.info("www/prefDistHelp.html")$size) )
+        ))
       })
       
     
@@ -230,6 +266,8 @@ discriminationServer <- function(id, plpResult) {
     }
   )
 }
+
+
 
 
 

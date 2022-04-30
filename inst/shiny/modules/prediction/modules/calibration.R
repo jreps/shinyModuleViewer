@@ -112,10 +112,22 @@ calibrationServer <- function(id, plpResult) {
       
       
       shiny::observeEvent(input$calHelp, {
-        shiny::showInfoBox("Calibration Help", "html/calHelp.html")
+        shiny::showModal(shiny::modalDialog(
+          title = "Calibration Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/calHelp.html", file.info("www/calHelp.html")$size) )
+        ))
       })
       shiny::observeEvent(input$demoHelp, {
-        shiny::showInfoBox("Demographic Help", "html/demoHelp.html")
+        shiny::showModal(shiny::modalDialog(
+          title = "Demographic Help",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar("www/demoHelp.html", file.info("www/demoHelp.html")$size) )
+        ))
       })
       
       

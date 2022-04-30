@@ -12,12 +12,12 @@ server <- shiny::shinyServer(function(input, output, session) {
       id ='menu',
       
       addInfo(
-        shinydashboard::menuItem(
+        item = shinydashboard::menuItem(
           text = "About", 
           tabName = "About", 
           icon = shiny::icon("info")
         ), 
-        "About"
+        infoId = "AboutInfo"
       ),
       
       addInfo(
@@ -26,7 +26,7 @@ server <- shiny::shinyServer(function(input, output, session) {
           tabName = "Data", 
           icon = shiny::icon("database")
         ), 
-        "Data"
+        "DataInfo"
       ),
       
       addInfo(
@@ -35,7 +35,7 @@ server <- shiny::shinyServer(function(input, output, session) {
           tabName = "PredictionDiagnostic", 
           icon = shiny::icon("stethoscope")
         ), 
-        "PredictionDiagnostic"
+        "PredictionDiagnosticInfo"
       ),
       
       addInfo(
@@ -44,7 +44,7 @@ server <- shiny::shinyServer(function(input, output, session) {
           tabName = "Prediction", 
           icon = shiny::icon("table")
         ), 
-        "Prediction"
+        "PredictionInfo"
       ),
       
       addInfo(
@@ -53,7 +53,7 @@ server <- shiny::shinyServer(function(input, output, session) {
           tabName = "Estimation", 
           icon = shiny::icon("question")
         ), 
-        "Estimation"
+        "EstimationInfo"
       )
       
 
@@ -64,13 +64,13 @@ server <- shiny::shinyServer(function(input, output, session) {
   # Helper
   #=============
   
-  shiny::observeEvent(input$DescriptionInfo, {
+  shiny::observeEvent(input$AboutInfo, {
     showInfoBox("About", "www/About.html")
   })
-  shiny::observeEvent(input$ModelInfo, {
+  shiny::observeEvent(input$PredictionInfo, {
     showInfoBox("Prediction", "www/Prediction.html")
   })
-  shiny::observeEvent(input$DataInfoInfo, {
+  shiny::observeEvent(input$DataInfo, {
     showInfoBox("Data", "www/Data.html")
   })
   
@@ -95,27 +95,23 @@ server <- shiny::shinyServer(function(input, output, session) {
     if(input$menu == 'Prediction' & runServer[['Prediction']]==1){ 
       predictionServer(
         id = 'prediction', 
-        resultDatabaseSettings = list(
-          myPort = keyring::key_get("myPort", "lungcancer"),
-          targetDialect = keyring::key_get("targetDialect", "lungcancer"),
-          myServer = keyring::key_get("myServer", "lungcancer"),
-          myUser = keyring::key_get("myUser", "lungcancer"),
-          myPassword = keyring::key_get("myPassword", "lungcancer"),
-          
-          mySchema = keyring::key_get("mySchema", "lungcancer"),
-          myTableAppend =  'lungcancer_'
-          
-        ))
+        resultDatabaseSettings = jsonlite::fromJSON(
+          keyring::key_get(
+            "resultDatabaseSettings", 
+            "lungcancer"
+            )
+          )
+        )
     }
     
     if(input$menu == 'PredictionDiagnostic' & runServer[['PredictionDiagnostic']]==1){
       predictionDiagnosticServer(
         id = 'predictionDiagnostic',
-        resultDatabaseSettings = list(
-          server = "/Users/jreps/Documents/andromeda/fileb08337dba1a0.sqlite",
-          targetDialect = 'sqlite',
-          mySchema = 'main',
-          myTableAppend =  ''
+        resultDatabaseSettings = jsonlite::fromJSON(
+          keyring::key_get(
+            "resultDatabaseSettings", 
+            "predictionDiagnostic"
+          )
         )
       )
     }

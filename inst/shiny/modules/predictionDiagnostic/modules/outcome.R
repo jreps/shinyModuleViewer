@@ -1,11 +1,23 @@
 outcomeViewer <- function(id){
   ns <- shiny::NS(id)
   shiny::fluidPage(
-    shiny::p('Probast 3.1: Was the outcome determined appropriately? (Are age/sex/year/month trends expected?)'),
+    
+    shinydashboard::box( 
+      status = 'info',
+      title = shiny::actionLink(
+        ns("diagnostic_outcomeHelp"), 
+        "Probast 3.1", 
+        icon = icon("info")
+      ),
+      solidHeader = TRUE,
+    
+    shiny::p('Was the outcome determined appropriately? (Are age/sex/year/month trends expected?)'),
     shiny::p(''),
     shiny::uiOutput(ns("outcomeDropdown")),
     
     plotly::plotlyOutput(ns('outcomePlot'))
+    
+    )
   )
 }
 
@@ -23,13 +35,28 @@ outcomeServer <- function(
     id,
     function(input, output, session) {
       
+      shiny::observeEvent(input$diagnostic_outcomeHelp , {
+        
+        fileLoc <- file.path('modules', strsplit(as.character(session$ns('outcomeParameters')), '-')[[1]][1],'www', 'probast3p1.html')
+
+        shiny::showModal(shiny::modalDialog(
+          title = "Probast 3.1",
+          easyClose = TRUE,
+          footer = NULL,
+          size = "l",
+          shiny::HTML(readChar(fileLoc, file.info(fileLoc)$size) )
+        ))
+      })
+     
+      
+      
       shiny::observeEvent(
         resultRow(),
         {
           if(!is.null(resultRow())){
             
             
-      outcomeTable <- getOutcomes(
+      outcomeTable <- getOutcomesData(
         con = con, 
         mySchema = mySchema, 
         targetDialect = targetDialect, 
@@ -83,7 +110,7 @@ outcomeServer <- function(
   )
 }
 
-getOutcomes <- function(
+getOutcomesData <- function(
   con, 
   mySchema, 
   targetDialect, 
@@ -107,6 +134,8 @@ getOutcomes <- function(
   
   result <- DatabaseConnector::dbGetQuery(conn =  con, statement = sql) 
   colnames(result) <- SqlRender::snakeCaseToCamelCase(colnames(result))
+  
+  ParallelLogger::logInfo("fetched outcome diagnostics")
   
   return(result)
 }

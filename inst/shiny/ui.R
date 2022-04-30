@@ -18,7 +18,7 @@
 
 source("modules/estimation/module.R")
 source("modules/prediction/module.R")
-source("modules/predictionDiagnostics/module.R")
+source("modules/predictionDiagnostic/module.R")
 source("modules/data/module.R")
 source("modules/about/module.R")
 
@@ -28,8 +28,8 @@ ui <- shinydashboard::dashboardPage(
   shinydashboard::dashboardHeader(
     title = "OHDSI Analysis Viewer", 
     tags$li(
-      div(
-        img(
+      shiny::div(
+        shiny::img(
           src = 'logo.png',
           title = "OHDSI", 
           height = "40px", 

@@ -16,13 +16,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source("modules/predictionDiagnostics/modules/summary.R")
-source("modules/predictionDiagnostics/modules/participant.R")
-source("modules/predictionDiagnostics/modules/predictor.R")
-source("modules/predictionDiagnostics/modules/outcome.R")
-
 predictionDiagnosticViewer <- function(id=1) {
   ns <- shiny::NS(id)
+  
+ moduleFiles <- dir(file.path("modules",strsplit(id,'-')[[1]][1],"modules"), pattern = '.R')
+  if(length(moduleFiles)>0){
+    for(fileLoc in moduleFiles){
+      source(
+        file.path(
+        "modules",
+        strsplit(id,'-')[[1]][1],
+        "modules", 
+        fileLoc
+        ), 
+        local=TRUE
+        )
+    }
+  }
   
   shiny::tabsetPanel(
     id = ns('allView'),
@@ -65,6 +75,21 @@ predictionDiagnosticServer <- function(
   shiny::moduleServer(
     id,
     function(input, output, session, diagnosticDatabaseSettings = resultDatabaseSettings) {
+      
+      moduleFiles <- dir(file.path("modules",strsplit(id,'-')[[1]][1],"modules"), pattern = '.R')
+      if(length(moduleFiles)>0){
+        for(fileLoc in moduleFiles){
+          source(
+            file.path(
+              "modules",
+              strsplit(id,'-')[[1]][1],
+              "modules", 
+              fileLoc
+            ), 
+            local=TRUE
+          )
+        }
+      }
       
       # connect
       if(F){
@@ -112,6 +137,85 @@ predictionDiagnosticServer <- function(
         }
       })
       
+      
+      
+      
+      # get data
+      getDbSummary <- function(
+        con, 
+        mySchema, 
+        targetDialect, 
+        myTableAppend = '',
+        threshold1_2 = 0.95
+      ){
+        ParallelLogger::logInfo("gettingDb summary")
+        
+        sql <- "SELECT distinct design.DIAGNOSTIC_ID,
+          design.DATABASE,
+          design.TARGET_JSON,
+          design.OUTCOME_JSON,
+          probast.PROBAST_ID,
+          probast.RESULT
+          
+          from 
+          @my_schema.@my_table_appendDIAGNOSTIC_DESIGN_SETTINGS design inner join
+          @my_schema.@my_table_appendDIAGNOSTIC_PROBAST probast
+          on design.DIAGNOSTIC_ID = probast.DIAGNOSTIC_ID"
+        
+        sql <- SqlRender::render(sql = sql, 
+                                 my_schema = mySchema,
+                                 my_table_append = myTableAppend)
+        
+        sql <- SqlRender::translate(sql = sql, targetDialect =  targetDialect)
+        
+        summaryTable <- DatabaseConnector::dbGetQuery(conn =  con, statement = sql) 
+        colnames(summaryTable) <- SqlRender::snakeCaseToCamelCase(colnames(summaryTable))
+        
+        summaryTable$targetName <- unlist(
+          lapply(
+            summaryTable$targetJson, 
+            function(x){jsonlite::unserializeJSON(x)$name}
+          )
+        )
+        summaryTable$outcomeName <- unlist(
+          lapply(
+            summaryTable$outcomeJson, 
+            function(x){jsonlite::unserializeJSON(x)$name}
+          )
+        )
+        
+        summary <- summaryTable %>% tidyr::pivot_wider(
+          id_cols = c(
+            'diagnosticId', 
+            'database', 
+            'targetName', 
+            'outcomeName'
+          ),
+          names_from = 'probastId',
+          values_from = 'result'
+        ) %>% 
+          dplyr::mutate(
+            `1.2` = ifelse(
+              .data$`1.2.1`>=threshold1_2 & 
+                .data$`1.2.2`>=threshold1_2 &
+                .data$`1.2.3`>=threshold1_2 & 
+                .data$`1.2.4`>=threshold1_2,
+              'Pass', 
+              'Fail'
+            )
+          ) %>%
+          dplyr::select(
+            -c(
+              '1.2.1', 
+              '1.2.2', 
+              '1.2.3', 
+              '1.2.4'
+            )
+          ) %>%
+          dplyr::relocate(.data$`1.2`, .after = .data$`1.1`)
+        ParallelLogger::logInfo("got summary")
+        return(summary)
+      }
       summaryTable <- getDbSummary(
         con = con, 
         mySchema = diagnosticDatabaseSettings$mySchema, 
@@ -175,78 +279,3 @@ predictionDiagnosticServer <- function(
 
 
 
-getDbSummary <- function(
-  con, 
-  mySchema, 
-  targetDialect, 
-  myTableAppend = '',
-  threshold1_2 = 0.95
-){
-  ParallelLogger::logInfo("gettingDb summary")
-  
-  sql <- "SELECT distinct design.DIAGNOSTIC_ID,
-          design.DATABASE,
-          design.TARGET_JSON,
-          design.OUTCOME_JSON,
-          probast.PROBAST_ID,
-          probast.RESULT
-          
-          from 
-          @my_schema.@my_table_appendDIAGNOSTIC_DESIGN_SETTINGS design inner join
-          @my_schema.@my_table_appendDIAGNOSTIC_PROBAST probast
-          on design.DIAGNOSTIC_ID = probast.DIAGNOSTIC_ID"
-  
-  sql <- SqlRender::render(sql = sql, 
-                           my_schema = mySchema,
-                           my_table_append = myTableAppend)
-  
-  sql <- SqlRender::translate(sql = sql, targetDialect =  targetDialect)
-  
-  summaryTable <- DatabaseConnector::dbGetQuery(conn =  con, statement = sql) 
-  colnames(summaryTable) <- SqlRender::snakeCaseToCamelCase(colnames(summaryTable))
-  
-  summaryTable$targetName <- unlist(
-    lapply(
-      summaryTable$targetJson, 
-      function(x){jsonlite::unserializeJSON(x)$name}
-    )
-  )
-  summaryTable$outcomeName <- unlist(
-    lapply(
-      summaryTable$outcomeJson, 
-      function(x){jsonlite::unserializeJSON(x)$name}
-    )
-  )
-  
-  summary <- summaryTable %>% tidyr::pivot_wider(
-    id_cols = c(
-      'diagnosticId', 
-      'database', 
-      'targetName', 
-      'outcomeName'
-    ),
-    names_from = 'probastId',
-    values_from = 'result'
-  ) %>% 
-    dplyr::mutate(
-      `1.2` = ifelse(
-        .data$`1.2.1`>=threshold1_2 & 
-          .data$`1.2.2`>=threshold1_2 &
-          .data$`1.2.3`>=threshold1_2 & 
-          .data$`1.2.4`>=threshold1_2,
-        'Pass', 
-        'Fail'
-      )
-    ) %>%
-    dplyr::select(
-      -c(
-        '1.2.1', 
-        '1.2.2', 
-        '1.2.3', 
-        '1.2.4'
-      )
-    ) %>%
-    dplyr::relocate(.data$`1.2`, .after = .data$`1.1`)
-  ParallelLogger::logInfo("got summary")
-  return(summary)
-}

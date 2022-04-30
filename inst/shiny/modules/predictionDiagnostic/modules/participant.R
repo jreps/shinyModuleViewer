@@ -124,5 +124,7 @@ getParticipants <- function(
   result <- DatabaseConnector::dbGetQuery(conn =  con, statement = sql) 
   colnames(result) <- SqlRender::snakeCaseToCamelCase(colnames(result))
   
+  ParallelLogger::logInfo("fetched participant diagnostics")
+  
   return(result)
 }

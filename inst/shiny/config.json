@@ -1,0 +1,43 @@
+{
+  "shinyModules": [
+  {
+    "name": "About", 
+    "user": "jreps",
+    "repository": "shinyModuleViewer",
+    "branch": "master",
+    "moduleName": "about",
+    "databaseConnectionKeyService": "none",
+    "databaseConnectionKeyUsername": "none",
+    "order": 1,
+    "infoBoxFile": "About.html",
+    "icon": "info"
+  },
+  
+  {
+    "name": "Prediction", 
+    "user": "jreps",
+    "repository": "shinyModuleViewer",
+    "branch": "master",
+    "moduleName": "prediction",
+    "databaseConnectionKeyService": "resultDatabaseSettings",
+    "databaseConnectionKeyUsername": "lungcancer",
+    "order": 2,
+    "infoBoxFile": "Prediction.html",
+    "icon": "table"
+  },
+  
+  {
+    "name": "Prediction", 
+    "user": "jreps",
+    "repository": "shinyModuleViewer",
+    "branch": "master",
+    "moduleName": "predictionDiagnostic",
+    "databaseConnectionKeyService": "resultDatabaseSettings",
+    "databaseConnectionKeyUsername": "predictionDiagnostic",
+    "order": 3,
+    "infoBoxFile": "PredictionDiagnostic.html",
+    "icon": "stethoscope"
+  }
+  
+  ]
+}
