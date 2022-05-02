@@ -1,27 +1,45 @@
-createConfig <- function(configList){
-  # code to convert settings to a config json
+createShinyApp <- function(
+  config, 
+  shinyAppLocation, 
+  overwrite = F
+  ){
   
+  # create the shinyAppLocation
+  if(dir.exists(shinyAppLocation) & overwrite == F){
+    stop('shinyApp Location exists - please use a different location or set overwrite to T')
+  }
+    
+  if(!dir.exists(shinyAppLocation)){
+    dir.create(shinyAppLocation, recursive = T)
+  }
+  
+  # download the modules based on the config
+  downloadModules(
+    config = config, 
+    shinyAppLocation = shinyAppLocation
+  )
+  
+  # create the UI and server files
+  createShinyFiles(
+    config = config, 
+    shinyAppLocation = shinyAppLocation
+    )
+  
+  return(shinyAppLocation)
 }
 
+
+
+
+# helpers
 downloadModules <- function(
   config, 
   shinyAppLocation
 ){
   
-  # get from config:
-  config <- list()
-  config$modules <- list(
-    list(
-      user = 'jreps',
-      repository = 'shinyModuleViewer',
-      branch = 'master',
-      moduleName = 'predictionDiagnostics'
-    )
-  )
-  
   tempLocation <- tempdir()
   
-  for(moduleConfig in config$modules){
+  for(moduleConfig in config$shinyModules){
     
     user <- moduleConfig$user
     repository <- moduleConfig$repository
@@ -82,7 +100,7 @@ createShinyFiles <- function(config, shinyAppLocation){
 }
 
 createUiText <- function(config){
-
+  
   # create the UI.R for the shiny app
   details <- data.frame(
     name = unlist(lapply(config$shinyModules, function(x) x$name)),
@@ -109,7 +127,7 @@ createUiText <- function(config){
   
   # next start the UI
   uiText  <- paste(uiText, 
-  'ui <- shinydashboard::dashboardPage( \n
+                   'ui <- shinydashboard::dashboardPage( \n
          skin = "black",  \n
   
   shinydashboard::dashboardHeader( \n
@@ -136,10 +154,10 @@ createUiText <- function(config){
   shinydashboard::dashboardBody( \n
     shinydashboard::tabItems( \n
   ',
-  
-  sep = '\n', 
-  collapse = '\n'
-)
+                   
+                   sep = '\n', 
+                   collapse = '\n'
+  )
   uiText <- paste(
     uiText,  
     paste0(details$tabs, collapse =',\n'),
@@ -147,9 +165,9 @@ createUiText <- function(config){
     ')',
     ')', 
     sep = '\n', collapse= '\n'
-    )
-      
-return(uiText)
+  )
+  
+  return(uiText)
 }
 
 createServerText <- function(config){
@@ -184,8 +202,13 @@ createServerText <- function(config){
          })\n', .open = "<<", .close = ">>"  
       ),
       zeroValues = glue::glue('{name} = 0'),
-      server = glue::glue(
-        'if(input$menu == "<<name>>" & runServer[["<<name>>"]]==1){
+      server = 
+        
+        dplyr::case_when(
+          databaseConnectionKeyService != 'null' ~ 
+            
+            glue::glue(
+              'if(input$menu == "<<name>>" & runServer[["<<name>>"]]==1){
           <<name>>Server(
             id = "<<name>>",
             resultDatabaseSettings = jsonlite::fromJSON(
@@ -196,12 +219,23 @@ createServerText <- function(config){
             )
          )
         }', .open = "<<", .close = ">>"
-        
-      )
+              
+            ),
+          
+          databaseConnectionKeyService == 'null' ~ 
+            glue::glue(
+              'if(input$menu == "<<name>>" & runServer[["<<name>>"]]==1){
+          <<name>>Server(
+            id = "<<name>>"
+            )
+        }', .open = "<<", .close = ">>"
+            )
+        )
+      
     ) %>% 
     dplyr::arrange(.data$order)
 
-
+  
   # create the server.R for the shiny app
   serverText <- paste('
   server <- shiny::shinyServer(function(input, output, session) { \n
@@ -215,18 +249,18 @@ createServerText <- function(config){
     shinydashboard::sidebarMenu( \n
       id = "menu", \n
       ',
-
-    paste0(details$addInfo, collapse= ', \n'),
-    sep = '\n'
-    )
-    
+                      
+                      paste0(details$addInfo, collapse= ', \n'),
+                      sep = '\n'
+  )
+  
   serverText <- paste(
     serverText, 
     ') \n', 
     ') \n', 
     sep = '\n'
-    )  
-     
+  )  
+  
   serverText <- paste(
     serverText,
     '  
@@ -236,36 +270,36 @@ createServerText <- function(config){
     ',
     paste0(details$helper, collapse = '\n'), 
     sep = '\n'
-    )
-
+  )
+  
   
   serverText<- paste0(
     serverText,
-  '\n
+    '\n
   #=============
   # module severs
   #=============',
-  '\n',
-  'runServer <- shiny::reactiveValues( \n',
-  
-  paste0(details$zeroValues, collapse = ', \n'),
-  '\n ) \n',
-  
-  'shiny::observeEvent(input$menu,{ \n
+    '\n',
+    'runServer <- shiny::reactiveValues( \n',
+    
+    paste0(details$zeroValues, collapse = ', \n'),
+    '\n ) \n',
+    
+    'shiny::observeEvent(input$menu,{ \n
     runServer[[input$menu]] <- runServer[[input$menu]] +1 \n',
-  
-  paste0(details$server, collapse = '\n'),
-  
-  '
+    
+    paste0(details$server, collapse = '\n'),
+    
+    '
    }
   )
  }
 )'
   )
-
- serverText <- paste0(
-   serverText, 
- '
+  
+  serverText <- paste0(
+    serverText, 
+    '
 # helper \n
 
 addInfo <- function(item, infoId) { \n
@@ -290,31 +324,8 @@ showInfoBox <- function(title, htmlFileName) { \n
   )) \n
 } \n
   ', 
-sep = '\n'
-)
-
-return(serverText)
+    sep = '\n'
+  )
+  
+  return(serverText)
 }
-
-
-
-
-viewShiny <- function(){
-  # open up the app
-}
-
-
-if(F){
-  # testing
-loc <- '/Users/jreps/Documents/github/shinyModuleViewer/inst/shiny/config.json'
-config <-  ParallelLogger::loadSettingsFromJson(loc)
-res <- createUiText(config)
-res <- createServerText(config)
-
-createShinyFiles(config, shinyAppLocation = '/Users/jreps/Documents/shinyTest')
-
-
-
-}
-
-

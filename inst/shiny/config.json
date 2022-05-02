@@ -6,11 +6,12 @@
     "repository": "shinyModuleViewer",
     "branch": "master",
     "moduleName": "about",
-    "databaseConnectionKeyService": "none",
-    "databaseConnectionKeyUsername": "none",
+    "databaseConnectionKeyService": "null",
+    "databaseConnectionKeyUsername": "null",
     "order": 1,
     "infoBoxFile": "About.html",
-    "icon": "info"
+    "icon": "info",
+    "dependencies": ["shiny", "dplyr"]
   },
   
   {
@@ -27,7 +28,7 @@
   },
   
   {
-    "name": "Prediction", 
+    "name": "PredictionDiagnostic", 
     "user": "jreps",
     "repository": "shinyModuleViewer",
     "branch": "master",
