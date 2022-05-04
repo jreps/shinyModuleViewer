@@ -1,7 +1,9 @@
 {
   "shinyModules": [
   {
-    "name": "About", 
+    "name": "about", 
+    "uiFunction": "aboutViewer",
+    "serverFunction": "aboutServer",
     "user": "jreps",
     "repository": "shinyModuleViewer",
     "branch": "master",
@@ -15,7 +17,9 @@
   },
   
   {
-    "name": "Prediction", 
+    "name": "prediction", 
+    "uiFunction": "predictionViewer",
+    "serverFunction": "predictionServer",
     "user": "jreps",
     "repository": "shinyModuleViewer",
     "branch": "master",
@@ -28,7 +32,9 @@
   },
   
   {
-    "name": "PredictionDiagnostic", 
+    "name": "predictionDiagnostic", 
+    "uiFunction": "predictionDiagnosticViewer",
+    "serverFunction": "predictionDiagnosticServer",
     "user": "jreps",
     "repository": "shinyModuleViewer",
     "branch": "master",

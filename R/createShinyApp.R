@@ -63,7 +63,7 @@ downloadModules <- function(
     download.file(
       url = url, 
       destfile = file.path(
-        tempLocation
+        tempLocation, paste0(moduleName,'.zip')
       )
     )
     
@@ -74,8 +74,7 @@ downloadModules <- function(
       ), 
       exdir = file.path(
         shinyAppLocation,
-        'modules',
-        moduleName
+        'modules'
       )
     )
     
@@ -106,7 +105,8 @@ createUiText <- function(config){
     name = unlist(lapply(config$shinyModules, function(x) x$name)),
     order  = unlist(lapply(config$shinyModules, function(x) x$order)),
     infoBoxFile = unlist(lapply(config$shinyModules, function(x) x$infoBoxFile)),
-    icon = unlist(lapply(config$shinyModules, function(x) x$icon))
+    icon = unlist(lapply(config$shinyModules, function(x) x$icon)),
+    uiFunction = unlist(lapply(config$shinyModules, function(x) x$uiFunction))
   )
   
   
@@ -116,7 +116,7 @@ createUiText <- function(config){
       source = glue::glue('source("modules/{name}/module.R") \n'),
       tabs = glue::glue('shinydashboard::tabItem( \n
         tabName = "{name}", \n
-        {name}Viewer({name}) \n
+        {uiFunction}("{name}") \n
       )\n'
       )
     ) %>% 
@@ -179,7 +179,8 @@ createServerText <- function(config){
     infoBoxFile = unlist(lapply(config$shinyModules, function(x) x$infoBoxFile)),
     icon = unlist(lapply(config$shinyModules, function(x) x$icon)),
     databaseConnectionKeyService = unlist(lapply(config$shinyModules, function(x) x$databaseConnectionKeyService)),
-    databaseConnectionKeyUsername = unlist(lapply(config$shinyModules, function(x) x$databaseConnectionKeyUsername))
+    databaseConnectionKeyUsername = unlist(lapply(config$shinyModules, function(x) x$databaseConnectionKeyUsername)),
+    serverFunction = unlist(lapply(config$shinyModules, function(x) x$serverFunction))
     
   )
   
@@ -209,7 +210,7 @@ createServerText <- function(config){
             
             glue::glue(
               'if(input$menu == "<<name>>" & runServer[["<<name>>"]]==1){
-          <<name>>Server(
+          <<serverFunction>>(
             id = "<<name>>",
             resultDatabaseSettings = jsonlite::fromJSON(
              keyring::key_get(
@@ -225,7 +226,7 @@ createServerText <- function(config){
           databaseConnectionKeyService == 'null' ~ 
             glue::glue(
               'if(input$menu == "<<name>>" & runServer[["<<name>>"]]==1){
-          <<name>>Server(
+          <<serverFunction>>(
             id = "<<name>>"
             )
         }', .open = "<<", .close = ">>"

@@ -23,6 +23,7 @@ Imports:
   htmlwidgets (> 0.8),
   htmltools,
   jsonlite,
+  markdown,
   ParallelLogger (>= 2.0.0),
   plotly,
   rlang,
@@ -34,7 +35,6 @@ Imports:
 Suggests:
   Eunomia,
   knitr,
-  markdown,
   rmarkdown,
   testthat
 Remotes:

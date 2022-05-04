@@ -5,11 +5,23 @@ summaryDiagnosticViewer <- function(id){
 
 summaryDiagnosticServer <- function(
   id, 
-  summaryTable
+  con, 
+  mySchema, 
+  targetDialect,
+  myTableAppend
 ) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      
+      
+      summaryTable <- getDbSummary(
+        con = con, 
+        mySchema = mySchema, 
+        targetDialect = targetDialect,
+        myTableAppend = myTableAppend#,threshold1_2
+      )
+      
       # check if this makes drpdwn filter
       summaryTable$targetName <- as.factor(summaryTable$targetName)
       summaryTable$outcomeName <- as.factor(summaryTable$outcomeName)
@@ -87,9 +99,92 @@ summaryDiagnosticServer <- function(
         input$summaryTable_rows_selected
       })
       
-      return(selectedRow)
+      return(
+        list(
+          summaryTable = summaryTable, 
+          resultRow = selectedRow
+          )
+        )
       
     }
   )
 }
 
+
+
+# get data
+getDbSummary <- function(
+  con, 
+  mySchema, 
+  targetDialect, 
+  myTableAppend = '',
+  threshold1_2 = 0.95
+){
+  ParallelLogger::logInfo("gettingDb summary")
+  
+  sql <- "SELECT distinct design.DIAGNOSTIC_ID,
+          design.DATABASE,
+          design.TARGET_JSON,
+          design.OUTCOME_JSON,
+          probast.PROBAST_ID,
+          probast.RESULT
+          
+          from 
+          @my_schema.@my_table_appendDIAGNOSTIC_DESIGN_SETTINGS design inner join
+          @my_schema.@my_table_appendDIAGNOSTIC_PROBAST probast
+          on design.DIAGNOSTIC_ID = probast.DIAGNOSTIC_ID"
+  
+  sql <- SqlRender::render(sql = sql, 
+                           my_schema = mySchema,
+                           my_table_append = myTableAppend)
+  
+  sql <- SqlRender::translate(sql = sql, targetDialect =  targetDialect)
+  
+  summaryTable <- DatabaseConnector::dbGetQuery(conn =  con, statement = sql) 
+  colnames(summaryTable) <- SqlRender::snakeCaseToCamelCase(colnames(summaryTable))
+  
+  summaryTable$targetName <- unlist(
+    lapply(
+      summaryTable$targetJson, 
+      function(x){jsonlite::unserializeJSON(x)$name}
+    )
+  )
+  summaryTable$outcomeName <- unlist(
+    lapply(
+      summaryTable$outcomeJson, 
+      function(x){jsonlite::unserializeJSON(x)$name}
+    )
+  )
+  
+  summary <- summaryTable %>% tidyr::pivot_wider(
+    id_cols = c(
+      'diagnosticId', 
+      'database', 
+      'targetName', 
+      'outcomeName'
+    ),
+    names_from = 'probastId',
+    values_from = 'result'
+  ) %>% 
+    dplyr::mutate(
+      `1.2` = ifelse(
+        .data$`1.2.1`>=threshold1_2 & 
+          .data$`1.2.2`>=threshold1_2 &
+          .data$`1.2.3`>=threshold1_2 & 
+          .data$`1.2.4`>=threshold1_2,
+        'Pass', 
+        'Fail'
+      )
+    ) %>%
+    dplyr::select(
+      -c(
+        '1.2.1', 
+        '1.2.2', 
+        '1.2.3', 
+        '1.2.4'
+      )
+    ) %>%
+    dplyr::relocate(.data$`1.2`, .after = .data$`1.1`)
+  ParallelLogger::logInfo("got summary")
+  return(summary)
+}
