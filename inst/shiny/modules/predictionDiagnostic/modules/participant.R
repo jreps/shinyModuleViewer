@@ -1,21 +1,17 @@
 participantViewer <- function(id){
   ns <- shiny::NS(id)
   shiny::fluidPage(
+    shiny::p('Probast 1.2: Were all inclusions and exclusions of participants appropriate? (differences caused by different inclusion criteria can be observed here)'),
+    shiny::p(''),
     
-    shinydashboard::box( 
-      status = 'info',
-      title = shiny::actionLink(
-        ns("diagnostic_participantHelp"), 
-        "Probast 1.2", 
-        icon = icon("info")
-      ),
-      solidHeader = TRUE, width = '90%',
-      shiny::p('Were all inclusions and exclusions of participants appropriate? (differences caused by different inclusion criteria can be observed here)'),
-      shiny::p(''),
-      shiny::uiOutput(ns("participantDropdown")),
-      
-      DT::dataTableOutput(ns("participantTable"))
-    )
+    shiny::selectInput(
+      inputId = ns('participantParameters'),
+      label = 'Select Parameter',
+      multiple = F, 
+      choices = c('missing')
+    ),
+    
+    DT::dataTableOutput(ns('participantTable'))
   )
 }
 
@@ -25,84 +21,82 @@ participantServer <- function(
   resultRow, 
   mySchema, 
   con,
-  #inputSingleView,
   myTableAppend,
   targetDialect
 ) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-
-          participantTable <- shiny::reactive(
-            {
-            x <- getParticipants(
-              con = con, 
-              mySchema = mySchema, 
-              targetDialect = targetDialect, 
-              myTableAppend = myTableAppend,
-              diagnosticId = summaryTable[ifelse(is.null(resultRow()),1,resultRow()),'diagnosticId']
-            )
-            
-            x$parameter <- unlist(
-              lapply(
-                x$design, 
-                function(x){strsplit(x, ':')[[1]][1]}
-              )
-            )
-            x$paramvalue <- unlist(
-              lapply(
-                x$design, 
-                function(x){gsub(' ', '', strsplit(x, ':')[[1]][2])}
-              )
-            )
-          return(x)
-          }
-        )
-          
-          output$participantDropdown <- shiny::renderUI({
-            shiny::selectInput(
-              label = 'Select Parameter',
-              multiple = F, 
-              inputId = session$ns('participantParameters'),
-              choices = unique(participantTable()$parameter),
-              selected = unique(participantTable()$parameter)[1]
-            )
-          })
       
-      #input$participant_parameters
-      output$participantTable <- DT::renderDataTable(
+      
+      participantTable <- shiny::reactive({
         
-        DT::datatable(
-          participantTable() %>% 
-            dplyr::filter(.data$parameter == ifelse(is.null(input$participantParameters), unique(participantTable()$parameter)[1], input$participantParameters)) %>%
-            dplyr::select(
-              .data$probastId,
-              .data$paramvalue,
-              .data$metric, 
-              .data$value
-            ) %>%
-            dplyr::mutate(
-              value = format(.data$value, nsmall = 2, )
-            )  %>%
-            tidyr::pivot_wider(
-              names_from = .data$paramvalue, 
-              values_from = .data$value
-            )
-          ,
-          rownames= FALSE, 
-          selection = 'single', 
-          filter = 'top',
-          extensions = 'Buttons', 
-          options = list(
-            dom = 'Blfrtip' , 
-            buttons = c(I('colvis'), 'copy', 'excel', 'pdf' ),
-            scrollX = TRUE
+        participantTable <- getParticipants(
+          con = con, 
+          mySchema = mySchema, 
+          targetDialect = targetDialect, 
+          myTableAppend = myTableAppend,
+          diagnosticId = summaryTable[ifelse(is.null(resultRow()),1,resultRow()),'diagnosticId']
+        )
+        
+        participantTable$parameter <- unlist(
+          lapply(
+            participantTable$design, 
+            function(x){strsplit(x, ':')[[1]][1]}
+          )
+        )
+        participantTable$paramvalue <- unlist(
+          lapply(
+            participantTable$design, 
+            function(x){gsub(' ', '', strsplit(x, ':')[[1]][2])}
           )
         )
         
+        return(participantTable)
         
-      )
+      })
+
+      shiny::observe({
+        shiny::updateSelectInput(
+          session = session, 
+          inputId = "participantParameters", 
+          label = "Select Parameter", 
+          choices = unique(participantTable()$parameter),
+          selected = unique(participantTable()$parameter)[1]
+          )
+      })
       
+      
+      output$participantTable <- DT::renderDataTable(
+                DT::datatable(
+                  participantTable() %>% 
+                    dplyr::filter(.data$parameter == ifelse(is.null(input$participantParameters), unique(participantTable()$parameter)[1], input$participantParameters)) %>%
+                    dplyr::select(
+                      .data$probastId,
+                      .data$paramvalue,
+                      .data$metric, 
+                      .data$value
+                    ) %>%
+                    dplyr::mutate(
+                      value = format(.data$value, nsmall = 2, )
+                    )  %>%
+                    tidyr::pivot_wider(
+                      names_from = .data$paramvalue, 
+                      values_from = .data$value
+                    )
+                  ,
+                  rownames= FALSE, 
+                  selection = 'single', 
+                  filter = 'top',
+                  extensions = 'Buttons', 
+                  options = list(
+                    dom = 'Blfrtip' , 
+                    buttons = c(I('colvis'), 'copy', 'excel', 'pdf' ),
+                    scrollX = TRUE
+                  )
+                )
+              )
+
     }
   )
 }

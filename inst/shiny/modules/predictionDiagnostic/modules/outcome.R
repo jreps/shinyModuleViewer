@@ -13,7 +13,13 @@ outcomeViewer <- function(id){
     
     shiny::p('Was the outcome determined appropriately? (Are age/sex/year/month trends expected?)'),
     shiny::p(''),
-    shiny::uiOutput(ns("outcomeDropdown")),
+    
+    shiny::selectInput(
+      inputId = ns('outcomeParameters'),
+      label = 'Select Parameter',
+      multiple = F, 
+      choices = c('missing')
+    ),
     
     plotly::plotlyOutput(ns('outcomePlot'))
     
@@ -27,7 +33,6 @@ outcomeServer <- function(
   resultRow, 
   mySchema, 
   con,
-  #inputSingleView,
   myTableAppend,
   targetDialect
 ) {
@@ -47,64 +52,52 @@ outcomeServer <- function(
           shiny::HTML(readChar(fileLoc, file.info(fileLoc)$size) )
         ))
       })
-     
       
-      
-      shiny::observeEvent(
-        resultRow(),
-        {
-          if(!is.null(resultRow())){
-            
-            
-      outcomeTable <- getOutcomesData(
-        con = con, 
-        mySchema = mySchema, 
-        targetDialect = targetDialect, 
-        myTableAppend = myTableAppend,
-        diagnosticId = summaryTable[resultRow(),'diagnosticId']
-      )
-      
-      output$outcomeDropdown <- shiny::renderUI({
-        shiny::selectInput(
-          label = 'Select Parameter',
-          multiple = F, 
-          inputId = session$ns('outcomeParameters'),
-          choices = unique(outcomeTable$aggregation),
-          selected = unique(outcomeTable$aggregation)[1]
+      outcomeTable <- shiny::reactive({
+        getOutcomesData(
+          con = con, 
+          mySchema = mySchema, 
+          targetDialect = targetDialect, 
+          myTableAppend = myTableAppend,
+          diagnosticId = summaryTable[ifelse(is.null(resultRow()),1,resultRow()),'diagnosticId']
         )
       })
       
-      #plot: xvalue, outcomepercent, group by type -- filter: aggregation
-      output$outcomePlot <- plotly::renderPlotly({
-        plotly::plot_ly(
-          data = outcomeTable %>%
-            dplyr::filter(
-              .data$aggregation == ifelse(
-                is.null(input$outcomeParameters),
-                unique(outcomeTable$aggregation)[1],
-                input$outcomeParameters
-              )
-            ), 
-          x = ~xvalue, 
-          y = ~outcomepercent, 
-          group = ~type,
-          color = ~type,
-          type = 'scatter', 
-          mode = 'lines'
-        ) %>%
-          plotly::layout(
-            title = "Outcome rate",
-            xaxis = list(title = "Value"),
-            yaxis = list (title = "Percent of cohort with outcome")
-            )
+      shiny::observe({
+        updateSelectInput(
+          session = session, 
+          inputId = "outcomeParameters", 
+          label = "Select Parameter", 
+          choices =   unique(outcomeTable()$aggregation))
       })
-        
-            
       
- 
-          }
-          }
-      )
+        #plot: xvalue, outcomepercent, group by type -- filter: aggregation
+        output$outcomePlot <- plotly::renderPlotly({
+          plotly::plot_ly(
+            data = outcomeTable() %>%
+              dplyr::filter(
+                .data$aggregation == ifelse(
+                  is.null(input$outcomeParameters),
+                  unique(outcomeTable()$aggregation)[1],
+                  input$outcomeParameters
+                )
+              ), 
+            x = ~xvalue, 
+            y = ~outcomepercent, 
+            group = ~type,
+            color = ~type,
+            type = 'scatter', 
+            mode = 'lines'
+          ) %>%
+            plotly::layout(
+              title = "Outcome rate",
+              xaxis = list(title = "Value"),
+              yaxis = list (title = "Percent of cohort with outcome")
+            )
+        })
+      
+        
+      
       
     }
   )

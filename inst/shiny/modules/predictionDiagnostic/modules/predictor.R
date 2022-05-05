@@ -11,7 +11,13 @@ predictorViewer <- function(id){
       solidHeader = TRUE, width = '90%',
       shiny::p('Were predictor assessments made without knowledge of outcome data? (if outcome occur shortly after index this may be problematic)'),
       shiny::p(''),
-      shiny::uiOutput(ns("predictorDropdown")),
+      
+      shiny::selectInput(
+        inputId = ns('predictorParameters'),
+        label = 'Select Parameter',
+        multiple = F, 
+        choices = c('missing')
+      ),
       
       plotly::plotlyOutput(ns('predictorPlot'))
     )
@@ -24,7 +30,6 @@ predictorServer <- function(
   resultRow, 
   mySchema, 
   con,
-  #inputSingleView,
   myTableAppend,
   targetDialect
 ) {
@@ -32,71 +37,69 @@ predictorServer <- function(
     id,
     function(input, output, session) {
       
-      shiny::observeEvent(
-        resultRow(),
-        {
-          if(!is.null(resultRow())){
-      
-      predTable <- getPredictors(
-        con = con, 
-        mySchema = mySchema, 
-        targetDialect = targetDialect, 
-        myTableAppend = myTableAppend,
-        diagnosticId = summaryTable[resultRow(),'diagnosticId']
-      )
-      
-      output$predictorDropdown <- shiny::renderUI({
-        shiny::selectInput(
-          label = 'Select Parameter',
-          multiple = F, 
-          inputId = session$ns('predictorParameters'),
-          choices = unique(predTable$type),
-          selected = unique(predTable$type)[1]
+      predTable <- shiny::reactive({
+        getPredictors(
+          con = con, 
+          mySchema = mySchema, 
+          targetDialect = targetDialect, 
+          myTableAppend = myTableAppend,
+          diagnosticId = summaryTable[ifelse(is.null(resultRow()), 1, resultRow()),'diagnosticId']
         )
       })
       
       
-      tempPredTable <-  predTable %>% 
-        dplyr::filter(
-          .data$type == ifelse(
-            is.null(input$predictorParameters), 
-            unique(predTable$type)[1],
-            input$predictorParameters
-          )
-        ) %>%
-        dplyr::select(
-          .data$daystoevent, 
-          .data$outcomeattime, 
-          .data$observedatstartofday
-        ) %>%
-        dplyr::mutate(
-          survivalT = (.data$observedatstartofday-.data$outcomeattime)/.data$observedatstartofday
-        ) %>%
-        dplyr::filter(
-          !is.na(.data$daystoevent)
+      shiny::observe({
+        
+        print(predTable())
+        
+        shiny::updateSelectInput(
+          session = session, 
+          inputId = "predictorParameters", 
+          label = "Select Setting", 
+          choices = unique(predTable()$type),
+          selected = unique(predTable()$type)[1]
         )
-
-      tempPredTable$probSurvT  <- unlist(
+      })
+      
+      output$predictorPlot <- plotly::renderPlotly({
+        
+        tempPredTable <-  predTable() %>% 
+          dplyr::filter(
+            .data$type == ifelse(
+              is.null(input$predictorParameters), 
+              unique(predTable()$type)[1],
+              input$predictorParameters
+            )
+          ) %>%
+          dplyr::select(
+            .data$daystoevent, 
+            .data$outcomeattime, 
+            .data$observedatstartofday
+          ) %>%
+          dplyr::mutate(
+            survivalT = (.data$observedatstartofday-.data$outcomeattime)/.data$observedatstartofday
+          ) %>%
+          dplyr::filter(
+            !is.na(.data$daystoevent)
+          )
+        
+        tempPredTable$probSurvT  <- unlist(
           lapply(
             1:length(tempPredTable$daystoevent), 
             function(x){prod(tempPredTable$survivalT[tempPredTable$daystoevent <= tempPredTable$daystoevent[x]])}
           )
         )
-      
-      
-      output$predictorPlot <- plotly::renderPlotly({
+        
         plotly::plot_ly(x = ~ tempPredTable$daystoevent) %>% 
           plotly::add_lines(
-          y = tempPredTable$probSurvT, 
-          name = "hv", 
-          line = list(shape = "hv")
+            y = tempPredTable$probSurvT, 
+            name = "hv", 
+            line = list(shape = "hv")
           )
       })
       
-    } # if null
-  }) # observed event
       
-        }
+    }
   )
 }
 

@@ -16,6 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 predictionDiagnosticViewer <- function(id=1) {
   ns <- shiny::NS(id)
   
@@ -30,7 +31,7 @@ predictionDiagnosticViewer <- function(id=1) {
   }
   
   shiny::tabsetPanel(
-    id = ns('allView'),
+    id = ns('allViewD'),
     shiny::tabPanel(
       "All Diagnostic Summary",  
       summaryDiagnosticViewer(id = ns('sumTab'))
@@ -40,7 +41,7 @@ predictionDiagnosticViewer <- function(id=1) {
       "Explore Selected Diagnostics",
       
       shiny::tabsetPanel(
-        id = ns('singleView'),
+        id = ns('singleViewD'),
         shiny::tabPanel(
           "Participants",
           participantViewer(ns('participants'))
@@ -140,7 +141,7 @@ predictionDiagnosticServer <- function(
       
       # change to single model explore tab when summary table row is selected
       shiny::observeEvent(summary$resultRow(), {
-        shiny::updateTabsetPanel(session, "allView", selected = "Explore Selected Diagnostics")
+        shiny::updateTabsetPanel(session, "allViewD", selected = "Explore Selected Diagnostics")
       })
       
       # ===========================================
@@ -154,7 +155,7 @@ predictionDiagnosticServer <- function(
           summary$resultRow, 
           mySchema = diagnosticDatabaseSettings$mySchema, 
           con,
-          #inputSingleView = input$singleView,
+          #inputSingleView = input$singleViewD,
           myTableAppend = diagnosticDatabaseSettings$myTableAppend, 
           targetDialect = diagnosticDatabaseSettings$targetDialect
         ) 
@@ -165,7 +166,7 @@ predictionDiagnosticServer <- function(
         summary$resultRow, 
         mySchema = diagnosticDatabaseSettings$mySchema, 
         con,
-        #inputSingleView = input$singleView,
+        #inputSingleView = input$singleViewD,
         myTableAppend = diagnosticDatabaseSettings$myTableAppend, 
         targetDialect = diagnosticDatabaseSettings$targetDialect
       ) 
@@ -176,7 +177,7 @@ predictionDiagnosticServer <- function(
         resultRow = summary$resultRow, 
         mySchema = diagnosticDatabaseSettings$mySchema, 
         con = con,
-        #inputSingleView = input$singleView,
+        #inputSingleView = input$singleViewD,
         myTableAppend = diagnosticDatabaseSettings$myTableAppend, 
         targetDialect = diagnosticDatabaseSettings$targetDialect
       ) 
