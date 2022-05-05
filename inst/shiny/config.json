@@ -1,7 +1,9 @@
 {
   "shinyModules": [
   {
-    "name": "about", 
+    "id": "about", 
+    "tabName": "About", 
+    "tabText": "About",
     "uiFunction": "aboutViewer",
     "serverFunction": "aboutServer",
     "user": "jreps",
@@ -17,7 +19,9 @@
   },
   
   {
-    "name": "prediction", 
+    "id": "prediction", 
+    "tabName": "Prediction", 
+    "tabText": "Prediction",
     "uiFunction": "predictionViewer",
     "serverFunction": "predictionServer",
     "user": "jreps",
@@ -32,7 +36,9 @@
   },
   
   {
-    "name": "predictionDiagnostic", 
+    "id": "predictionDiagnostic", 
+    "tabName": "PredictionDiagnostic",
+    "tabText": "Prediction Diagnostic",
     "uiFunction": "predictionDiagnosticViewer",
     "serverFunction": "predictionDiagnosticServer",
     "user": "jreps",
@@ -42,7 +48,7 @@
     "databaseConnectionKeyService": "resultDatabaseSettings",
     "databaseConnectionKeyUsername": "predictionDiagnostic",
     "order": 3,
-    "infoBoxFile": "PredictionDiagnostic.html",
+    "infoBoxFile": "predictionDiagnostic.html",
     "icon": "stethoscope"
   }
   

@@ -1,11 +1,20 @@
 predictorViewer <- function(id){
   ns <- shiny::NS(id)
   shiny::fluidPage(
-    shiny::p('Probast 2.2: Were predictor assessments made without knowledge of outcome data? (if outcome occur shortly after index this may be problematic)'),
-    shiny::p(''),
-    shiny::uiOutput(ns("predictorDropdown")),
-  
-    plotly::plotlyOutput(ns('predictorPlot'))
+    shinydashboard::box( 
+      status = 'info',
+      title = shiny::actionLink(
+        ns("diagnostic_predictorsHelp"), 
+        "Probast 2.2", 
+        icon = icon("info")
+      ),
+      solidHeader = TRUE, width = '90%',
+      shiny::p('Were predictor assessments made without knowledge of outcome data? (if outcome occur shortly after index this may be problematic)'),
+      shiny::p(''),
+      shiny::uiOutput(ns("predictorDropdown")),
+      
+      plotly::plotlyOutput(ns('predictorPlot'))
+    )
   )
 }
 
@@ -15,7 +24,7 @@ predictorServer <- function(
   resultRow, 
   mySchema, 
   con,
-  inputSingleView,
+  #inputSingleView,
   myTableAppend,
   targetDialect
 ) {

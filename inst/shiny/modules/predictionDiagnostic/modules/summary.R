@@ -1,6 +1,15 @@
 summaryDiagnosticViewer <- function(id){
   ns <- shiny::NS(id)
-  DT::dataTableOutput(ns('summaryTable'))
+  shinydashboard::box( 
+    status = 'info',
+    title = shiny::actionLink(
+      ns("diagnostic_summaryHelp"), 
+      "Probast Summary", 
+      icon = icon("info")
+    ),
+    solidHeader = TRUE, width = '90%',
+    DT::dataTableOutput(ns('summaryTable'))
+  )
 }
 
 summaryDiagnosticServer <- function(

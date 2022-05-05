@@ -9,7 +9,7 @@ outcomeViewer <- function(id){
         "Probast 3.1", 
         icon = icon("info")
       ),
-      solidHeader = TRUE,
+      solidHeader = TRUE, width = '90%',
     
     shiny::p('Was the outcome determined appropriately? (Are age/sex/year/month trends expected?)'),
     shiny::p(''),
@@ -27,7 +27,7 @@ outcomeServer <- function(
   resultRow, 
   mySchema, 
   con,
-  inputSingleView,
+  #inputSingleView,
   myTableAppend,
   targetDialect
 ) {

@@ -102,21 +102,24 @@ createUiText <- function(config){
   
   # create the UI.R for the shiny app
   details <- data.frame(
-    name = unlist(lapply(config$shinyModules, function(x) x$name)),
+    tabName = unlist(lapply(config$shinyModules, function(x) x$tabName)),
+    tabText = unlist(lapply(config$shinyModules, function(x) x$tabText)),
+    id = unlist(lapply(config$shinyModules, function(x) x$id)),
     order  = unlist(lapply(config$shinyModules, function(x) x$order)),
     infoBoxFile = unlist(lapply(config$shinyModules, function(x) x$infoBoxFile)),
     icon = unlist(lapply(config$shinyModules, function(x) x$icon)),
-    uiFunction = unlist(lapply(config$shinyModules, function(x) x$uiFunction))
+    uiFunction = unlist(lapply(config$shinyModules, function(x) x$uiFunction)),
+    moduleName = unlist(lapply(config$shinyModules, function(x) x$moduleName))
   )
   
   
   # create the source text
   details <- details %>%
     dplyr::mutate(
-      source = glue::glue('source("modules/{name}/module.R") \n'),
+      source = glue::glue('source("modules/{moduleName}/module.R") \n'),
       tabs = glue::glue('shinydashboard::tabItem( \n
-        tabName = "{name}", \n
-        {uiFunction}("{name}") \n
+        tabName = "{tabName}", \n
+        {uiFunction}("{id}") \n
       )\n'
       )
     ) %>% 
@@ -174,13 +177,16 @@ createServerText <- function(config){
   
   # create the UI.R for the shiny app
   details <- data.frame(
-    name = unlist(lapply(config$shinyModules, function(x) x$name)),
+    tabName = unlist(lapply(config$shinyModules, function(x) x$tabName)),
+    tabText = unlist(lapply(config$shinyModules, function(x) x$tabText)),
+    id = unlist(lapply(config$shinyModules, function(x) x$id)),
     order  = unlist(lapply(config$shinyModules, function(x) x$order)),
     infoBoxFile = unlist(lapply(config$shinyModules, function(x) x$infoBoxFile)),
     icon = unlist(lapply(config$shinyModules, function(x) x$icon)),
     databaseConnectionKeyService = unlist(lapply(config$shinyModules, function(x) x$databaseConnectionKeyService)),
     databaseConnectionKeyUsername = unlist(lapply(config$shinyModules, function(x) x$databaseConnectionKeyUsername)),
-    serverFunction = unlist(lapply(config$shinyModules, function(x) x$serverFunction))
+    serverFunction = unlist(lapply(config$shinyModules, function(x) x$serverFunction)),
+    moduleName = unlist(lapply(config$shinyModules, function(x) x$moduleName))
     
   )
   
@@ -191,27 +197,27 @@ createServerText <- function(config){
       addInfo = glue::glue('
       addInfo(
        item = shinydashboard::menuItem(
-       text = "{name}", 
-       tabName = "{name}", 
+       text = "{tabText}", 
+       tabName = "{tabName}", 
        icon = shiny::icon("{icon}")
        ), 
-       infoId = "{name}Info"
+       infoId = "{tabName}Info"
       ) \n'),
       helper = glue::glue(
-        'shiny::observeEvent(input$<<name>>Info, {
-           showInfoBox("About", "www/<<infoBoxFile>>")
+        'shiny::observeEvent(input$<<tabName>>Info, {
+           showInfoBox("<<tabName>>", "modules/<<moduleName>>/www/<<infoBoxFile>>")
          })\n', .open = "<<", .close = ">>"  
       ),
-      zeroValues = glue::glue('{name} = 0'),
+      zeroValues = glue::glue('{tabName} = 0'),
       server = 
         
         dplyr::case_when(
           databaseConnectionKeyService != 'null' ~ 
             
             glue::glue(
-              'if(input$menu == "<<name>>" & runServer[["<<name>>"]]==1){
+              'if(input$menu == "<<tabName>>" & runServer[["<<tabName>>"]]==1){
           <<serverFunction>>(
-            id = "<<name>>",
+            id = "<<id>>",
             resultDatabaseSettings = jsonlite::fromJSON(
              keyring::key_get(
               "<<databaseConnectionKeyService>>", 
@@ -225,9 +231,9 @@ createServerText <- function(config){
           
           databaseConnectionKeyService == 'null' ~ 
             glue::glue(
-              'if(input$menu == "<<name>>" & runServer[["<<name>>"]]==1){
+              'if(input$menu == "<<tabName>>" & runServer[["<<tabName>>"]]==1){
           <<serverFunction>>(
-            id = "<<name>>"
+            id = "<<id>>"
             )
         }', .open = "<<", .close = ">>"
             )

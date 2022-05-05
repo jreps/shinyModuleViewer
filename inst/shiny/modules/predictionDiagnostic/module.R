@@ -16,12 +16,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-moduleLocation <- list(predictionDiagnostic = 'modules/predictionDiagnostic')
-
 predictionDiagnosticViewer <- function(id=1) {
   ns <- shiny::NS(id)
   
- moduleFiles <- dir(file.path(moduleLocation[['predictionDiagnostic']],"modules"), pattern = '.R', full.names = T)
+  moduleFiles <- dir(file.path('modules',strsplit(id, '-')[[1]][1],"modules"), pattern = '.R', full.names = T)
   if(length(moduleFiles)>0){
     for(fileLoc in moduleFiles){
       source(
@@ -71,9 +69,11 @@ predictionDiagnosticServer <- function(
 ) {
   shiny::moduleServer(
     id,
-    function(input, output, session, diagnosticDatabaseSettings = resultDatabaseSettings) {
+    function(input, output, session) {
       
-      moduleFiles <- dir(file.path(moduleLocation[['predictionDiagnostic']],"modules"), pattern = '.R', full.names = T)
+      diagnosticDatabaseSettings = resultDatabaseSettings
+      
+      moduleFiles <- dir(file.path('modules',strsplit(id, '-')[[1]][1],"modules"), pattern = '.R', full.names = T)
       if(length(moduleFiles)>0){
         for(fileLoc in moduleFiles){
           source(
@@ -154,7 +154,7 @@ predictionDiagnosticServer <- function(
           summary$resultRow, 
           mySchema = diagnosticDatabaseSettings$mySchema, 
           con,
-          inputSingleView = input$singleView,
+          #inputSingleView = input$singleView,
           myTableAppend = diagnosticDatabaseSettings$myTableAppend, 
           targetDialect = diagnosticDatabaseSettings$targetDialect
         ) 
@@ -165,7 +165,7 @@ predictionDiagnosticServer <- function(
         summary$resultRow, 
         mySchema = diagnosticDatabaseSettings$mySchema, 
         con,
-        inputSingleView = input$singleView,
+        #inputSingleView = input$singleView,
         myTableAppend = diagnosticDatabaseSettings$myTableAppend, 
         targetDialect = diagnosticDatabaseSettings$targetDialect
       ) 
@@ -176,7 +176,7 @@ predictionDiagnosticServer <- function(
         resultRow = summary$resultRow, 
         mySchema = diagnosticDatabaseSettings$mySchema, 
         con = con,
-        inputSingleView = input$singleView,
+        #inputSingleView = input$singleView,
         myTableAppend = diagnosticDatabaseSettings$myTableAppend, 
         targetDialect = diagnosticDatabaseSettings$targetDialect
       ) 
