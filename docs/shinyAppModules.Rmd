@@ -102,7 +102,7 @@ The `module.r` file contains the UI function and the server function for the mai
 
 ### ui function
 
-### server funcction
+### server function
 
 Each OHDSI package shiny module should interact with a database backend and therefore the standard input into an OHDSI package shiny module server is the database connection details, result schema, string to append to the result schema plus any module specific inputs. These should be contained in a list called `resultDatabaseSettings`. Therefore the module server should start with the following code:
 
@@ -122,13 +122,16 @@ exampleServer <- function(
 
 ```
 
-## Helper.r file
+### loading modules
+[talk about how to stop everything loading at launch]
 
-The helper.r file contains any functions used across the submodules of a module.
+## Helper.r files
+
+The helper-<name>.r file contains any functions used across the submodules of a module.
 
 ## www folder
 
-The folder `www` contains all the html files that are used to display help information to the user ineracting with the shiny app. This folder should contain html files that will be loaded into the shiny app by a submodule or the main server function in `module.r`.
+The folder `www` contains all the html files that are used to display help information to the user ineracting with the shiny app. This folder should contain html files that will be loaded into the shiny app by a submodule or the main server function in `module.r`.  Include javascript/images as well.
 
 ## Sub-modules
 
@@ -141,3 +144,9 @@ This is a folder with shiny modules that are used by the main package module (te
 # Best Practices & Tips
 
 [add any naming conventions, code style conventions, etc. here]
+
+- database input name
+- database manager package (in DatabaseConnector) 
+- start with HADES
+- check reactive inputs and convert
+
