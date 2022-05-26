@@ -1,0 +1,143 @@
+---
+title: "Shiny App Module Best Practices"
+author: "Jenna Reps, Jamie Gilbert, Josh Ide"
+date: "`r Sys.Date() `"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What Is A Shiny Module
+
+A shiny module contains a UI function and a server function. Both functions require the input `id` that is a string and much match between the UI and server for the same module instance. For a nice tutorial on shiny modules see [this website](https://shiny.rstudio.com/articles/modules.html).
+
+## UI module function
+
+The module's UI function specifies how the shiny module will be displayed to the user. The string variable `id` should be an input for every model UI as it is used to create the namespace. The main aspect of a UI module is the namespace function `ns <- shiny::NS(id)`. This is put as the first line of any module UI function. Effectively, what this function does is append the id string to the input of the `ns()` function. For example, if a user calls the UI module by running `exampleViewer(id = 'example_name')` then the namespace function `ns()` will concatenate the string 'example_name' to every reference in the UI, e.g., `ns('serverReference') = 'example_name_serverReference'`. Therefore, as long as the `id` input values are unique for each instance of a module, the references within the modules viewer and server will be unique and not clash across modules.
+
+```{r setup, include = FALSE}
+
+exampleViewer <- function(id) {
+  ns <- shiny::NS(id)
+  
+  shiny::fluidRow(
+    
+    shiny::column(width = 12,
+                  
+                  shinydashboard::box(
+                    width = 12,
+                    title = "Example Title ",
+                    status = "info", 
+                    solidHeader = TRUE,
+                    DT::dataTableOutput(ns('serverReference'))              
+                  )
+    )
+  )
+}
+
+```
+
+## Server module function
+
+The module's server function is where all the data fetching and manipulation happens. The module server and UI server is linked by using the same `id` for example, when calling the server you would use `exampleServer(id = 'example_name')`. For the example above, the server function needs to specify what the `serverReference` dataTable is. The server automatically knows the namespace, so the `DT::dataTableOutput(ns('serverReference'))` can be define using the output `output$serverReference` (no namespace fucntion is require in the server code).
+
+```{r setup, include = FALSE}
+
+exampleServer <- function(
+  id,
+  extraInput
+  ) {
+  shiny::moduleServer(
+    id,
+    function(input, output, session) {
+      
+      output$serverReference <- data.frame(a=1:5, b=1:5)
+  
+    }
+  )
+}
+
+```
+
+## Calling the modules in the main UI and server
+
+```{r setup, include = FALSE}
+ui <- fluidPage(
+  exampleViewer("exampleName")
+)
+
+server <- function(input, output, session) {
+  exampleServer("exampleName")
+}
+
+shinyApp(ui, server)
+```
+
+# OHDSI Package Module Structure
+
+A package's shiny app modules should be put inside the package inst/shiny folder and have the following structure:
+
+```{r setup, include = FALSE}
++-- module.r
++-- helpers.r
++-- /www
++-- /modules  
+```
+
+## Module R file
+
+The `module.r` file contains the UI function and the server function for the main module.
+
+```{r setup, include = FALSE}
+
+
+```
+
+
+### module environment function
+
+[Add instructions and example function to create the environment with all the functions used by the module]
+
+### ui function
+
+### server funcction
+
+Each OHDSI package shiny module should interact with a database backend and therefore the standard input into an OHDSI package shiny module server is the database connection details, result schema, string to append to the result schema plus any module specific inputs. These should be contained in a list called `resultDatabaseSettings`. Therefore the module server should start with the following code:
+
+```{r setup, include = FALSE}
+
+exampleServer <- function(
+  id, 
+  resultDatabaseSettings
+  ) {
+  shiny::moduleServer(
+    id,
+    function(input, output, session) {
+      
+    }
+    )
+  }
+
+```
+
+## Helper.r file
+
+The helper.r file contains any functions used across the submodules of a module.
+
+## www folder
+
+The folder `www` contains all the html files that are used to display help information to the user ineracting with the shiny app. This folder should contain html files that will be loaded into the shiny app by a submodule or the main server function in `module.r`.
+
+## Sub-modules
+
+This is a folder with shiny modules that are used by the main package module (termed sub-modules). For the PatientLevelPrediction shiny app, there were a set of tabs with different aspects of a model (discrimination, calibration, model, model design, etc.) and these tabs were independant of each other. This made is possible to create shiny modules per tab and these are the PatientLevelPrediction submodules.
+
+# Shiny App Testing
+
+[JPG to add]
+
+# Best Practices & Tips
+
+[add any naming conventions, code style conventions, etc. here]

@@ -15,7 +15,12 @@ res <- createServerText(config)
 
 createShinyFiles(config, shinyAppLocation = '/Users/jreps/Documents/shinyTest')
 
-
+createShinyApp(
+  config = config, 
+  shinyAppLocation = '/Users/jreps/Documents/shinyTest/testShinyModule2', 
+  overwrite = T
+)
+shiny::runApp('/Users/jreps/Documents/shinyTest/testShinyModule2') 
 
 }
 
