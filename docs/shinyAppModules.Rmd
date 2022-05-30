@@ -83,7 +83,8 @@ A package's shiny app modules should be put inside the package inst/shiny folder
 +-- module.r
 +-- helpers.r
 +-- /www
-+-- /modules  
++-- /modules
++-- /tests
 ```
 
 ## Module R file
@@ -139,7 +140,95 @@ This is a folder with shiny modules that are used by the main package module (te
 
 # Shiny App Testing
 
-[JPG to add]
+Testing shiny modules is similar to testing R packages with testthat, however, there are some notable specific differences for this set up that must be followed.
+The reccomended structure is to include a tests directory in the module's root.
+ 
+## Creating test files
+In the test directory test files should have the prefix `test-*.R`, so creating a test file should be named `tests/test-MyModuleServerTest.R`.
+For resued fixtures and useful functions in tests, you can also include the files `tests/setup.R` and `tests/helper-<name>.R` which will be loaded when the tests start.
+For example, database connection strings that are specific to tests should be included in `setup.R`.
+  
+Tests can follow the normal (testthat patterns)[https://r-pkgs.org/tests.html#test-structure], however, testing a shiny module requires loading a shiny test server that can be used to simulate user inputs and test the behaviour of `shiny::reactive` calls as well as outputs.
+For example:
+  
+  
+```{r}
+source("../module.R")
+source("../modules/MyModuleCode.R")
+
+# Imagine this code lives inside your module
+exampleModuleServer <- function(id) {
+                       
+  ns <- shiny::NS(id)
+  shiny::moduleServer(id, function(input, output, session) {
+    myReactive <- shiny::reactive({ paste("Input is ", input$testString) })
+                  
+    output$testOutput <- shiny::renderText(myReactive())
+  })
+}
+  
+test_that("Example Test", {
+  shiny::testServer(exampleModuleServer, args = list(id = "testModule"), {
+  
+    # session$setInputs allows simulation of user behaviour
+    session$setInputs(
+      testString = "foo"
+    )
+    
+    # after modifying input output can be verified
+    expect_equal(myReactive(), "Input is foo")
+    expect_equal(output$testOutput, "Input is foo")
+    
+  })
+  
+})
+  
+```
+  
+**Note the use of `../` in the path for `source`** - this is becase code must be sourced relative to the tests directory!
+
+## Test data and fixtures
+The modules themselves will also require test data. 
+For that reason it is reccomended that a sqlite database containing test data should either be created in `setup.R` or be stored as flat files within the test directory.
+For example, creating a test sqlite database with the path `tests/testDb.sqlite`.
+  
+## Global setup files
+The following `tests/setup.R` file loads the required database connection string:
+  
+```{r}
+# setup.R
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = 'sqlite', server = 'testDb.sqlite')               
+```    
+
+## Running tests
+These tests can then be called with the testthat command:
+  
+```{r}
+testthat::test_dir('<path_to_module>/tests')  
+```
+  
+## Github actions
+Adding the following to a github actions script should allow tests to be run, for example as part of a HADES package where shiny source code is stored in `inst/shiny/MyModule`:
+                   
+```{yaml}
+## Assumed to be after normal R package checkes
+...
+  ## Assumes an Renv is required for the shiny code. 
+  ## If required packages are already installed skip this step       
+  - name: Set up DiagnosticsExplorer Environment
+    run: |
+      install.packages("renv")
+      setwd("inst/shiny/MyModule")
+      renv::restore()
+    shell: Rscript {0}
+
+  - name: Test My shiny module
+    run: |
+      renv::activate("inst/shiny/MyModule/")
+      testthat::test_dir("inst/shiny/MyModule/tests")
+    shell: Rscript {0}
+  
+```
 
 # Best Practices & Tips
 
