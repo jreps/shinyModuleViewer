@@ -1,3 +1,18 @@
+#' createShinyApp
+#'
+#' @description
+#' Creates the ui and server files for the shiny app
+#'
+#' @details
+#' Given a specification list, this fuction creates a shiny app for viewing OHDSI shiny analyses
+#' 
+#' @param config    An R list with the specifications
+#' @param shinyAppLocation  The folder to create the shiny app in                                       
+#' @param overwrite        Whether to overwrite the ui and sever files if they exist
+#' @return
+#' A shiny ui and server file in the specified shinyAppLocation location
+#'
+#' @export
 createShinyApp <- function(
   config, 
   shinyAppLocation, 
@@ -13,11 +28,8 @@ createShinyApp <- function(
     dir.create(shinyAppLocation, recursive = T)
   }
   
-  # download the modules based on the config
-  downloadModules(
-    config = config, 
-    shinyAppLocation = shinyAppLocation
-  )
+  # restore the renv into shinyAppLocation
+  # TODO
   
   # create the UI and server files
   createShinyFiles(
@@ -28,68 +40,6 @@ createShinyApp <- function(
   return(shinyAppLocation)
 }
 
-
-
-
-# helpers
-downloadModules <- function(
-  config, 
-  shinyAppLocation
-){
-  
-  tempLocation <- tempdir()
-  
-  for(moduleConfig in config$shinyModules){
-    
-    user <- moduleConfig$user
-    repository <- moduleConfig$repository
-    branch <- moduleConfig$branch
-    moduleName <- moduleConfig$moduleName
-    
-    ParallelLogger::logInfo(paste0('Downloading shiny module ', moduleName, '  from ', user, '/', repository))
-    
-    # download zipped file into file.path(shinyAppLocation, 'modules')
-    url <- paste0(
-      'https://raw.github.com/',
-      user,
-      '/',
-      repository,
-      '/',
-      branch,
-      '/inst/shiny/modules/',
-      paste0(moduleName,'.zip')
-    )
-    
-    download.file(
-      url = url, 
-      destfile = file.path(
-        tempLocation, paste0(moduleName,'.zip')
-      )
-    )
-    
-    utils::unzip(
-      zipfile = file.path(
-        tempLocation,
-        paste0(moduleName,'.zip')
-      ), 
-      exdir = file.path(
-        shinyAppLocation,
-        'modules'
-      )
-    )
-    
-    ParallelLogger::logInfo(paste0('Shiny module ', moduleName, ' downloaded from ', user, '/', repository))
-    
-  }
-  
-  return(
-    file.path(
-      shinyAppLocation,
-      'modules'
-    )
-  )
-  
-}
 
 createShinyFiles <- function(config, shinyAppLocation){
   # save text to UI.R
@@ -103,34 +53,26 @@ createUiText <- function(config){
   # create the UI.R for the shiny app
   details <- data.frame(
     tabName = unlist(lapply(config$shinyModules, function(x) x$tabName)),
-    tabText = unlist(lapply(config$shinyModules, function(x) x$tabText)),
+    shinyModulePackage = unlist(lapply(config$shinyModules, function(x) x$shinyModulePackage)),
     id = unlist(lapply(config$shinyModules, function(x) x$id)),
     order  = unlist(lapply(config$shinyModules, function(x) x$order)),
-    infoBoxFile = unlist(lapply(config$shinyModules, function(x) x$infoBoxFile)),
-    icon = unlist(lapply(config$shinyModules, function(x) x$icon)),
-    uiFunction = unlist(lapply(config$shinyModules, function(x) x$uiFunction)),
-    moduleName = unlist(lapply(config$shinyModules, function(x) x$moduleName))
+    uiFunction = unlist(lapply(config$shinyModules, function(x) x$uiFunction))
   )
-  
   
   # create the source text
   details <- details %>%
     dplyr::mutate(
-      source = glue::glue('source("modules/{moduleName}/module.R") \n'),
       tabs = glue::glue('shinydashboard::tabItem( \n
         tabName = "{tabName}", \n
-        {uiFunction}("{id}") \n
+        {shinyModulePackage}::{uiFunction}("{id}") \n
       )\n'
       )
     ) %>% 
     dplyr::arrange(.data$order)
   
-  uiText <- paste0(details$source, collapse= '\n')
-  
-  
+ 
   # next start the UI
-  uiText  <- paste(uiText, 
-                   'ui <- shinydashboard::dashboardPage( \n
+  uiText  <- paste('ui <- shinydashboard::dashboardPage( \n
          skin = "black",  \n
   
   shinydashboard::dashboardHeader( \n
@@ -138,7 +80,7 @@ createUiText <- function(config){
     tags$li( \n
       shiny::div( \n
         shiny::img( \n
-          src = "logo.png", \n
+          src = OhdsiShinyModules::getLogoImage(), \n
           title = "OHDSI", \n
           height = "40px", \n
           width = "40px" \n
@@ -178,6 +120,7 @@ createServerText <- function(config){
   # create the UI.R for the shiny app
   details <- data.frame(
     tabName = unlist(lapply(config$shinyModules, function(x) x$tabName)),
+    shinyModulePackage = unlist(lapply(config$shinyModules, function(x) x$shinyModulePackage)),
     tabText = unlist(lapply(config$shinyModules, function(x) x$tabText)),
     id = unlist(lapply(config$shinyModules, function(x) x$id)),
     order  = unlist(lapply(config$shinyModules, function(x) x$order)),
@@ -185,9 +128,7 @@ createServerText <- function(config){
     icon = unlist(lapply(config$shinyModules, function(x) x$icon)),
     databaseConnectionKeyService = unlist(lapply(config$shinyModules, function(x) x$databaseConnectionKeyService)),
     databaseConnectionKeyUsername = unlist(lapply(config$shinyModules, function(x) x$databaseConnectionKeyUsername)),
-    serverFunction = unlist(lapply(config$shinyModules, function(x) x$serverFunction)),
-    moduleName = unlist(lapply(config$shinyModules, function(x) x$moduleName))
-    
+    serverFunction = unlist(lapply(config$shinyModules, function(x) x$serverFunction))
   )
   
   
@@ -205,7 +146,7 @@ createServerText <- function(config){
       ) \n'),
       helper = glue::glue(
         'shiny::observeEvent(input$<<tabName>>Info, {
-           showInfoBox("<<tabName>>", "modules/<<moduleName>>/www/<<infoBoxFile>>")
+           showInfoBox("<<tabName>>", <<shinyModulePackage>>::<<infoBoxFile>>)
          })\n', .open = "<<", .close = ">>"  
       ),
       zeroValues = glue::glue('{tabName} = 0'),
@@ -216,7 +157,7 @@ createServerText <- function(config){
             
             glue::glue(
               'if(input$menu == "<<tabName>>" & runServer[["<<tabName>>"]]==1){
-          <<serverFunction>>(
+          <<shinyModulePackage>>::<<serverFunction>>(
             id = "<<id>>",
             resultDatabaseSettings = jsonlite::fromJSON(
              keyring::key_get(
@@ -232,7 +173,7 @@ createServerText <- function(config){
           databaseConnectionKeyService == 'null' ~ 
             glue::glue(
               'if(input$menu == "<<tabName>>" & runServer[["<<tabName>>"]]==1){
-          <<serverFunction>>(
+          <<shinyModulePackage>>::<<serverFunction>>(
             id = "<<id>>"
             )
         }', .open = "<<", .close = ">>"

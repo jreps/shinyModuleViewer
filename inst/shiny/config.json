@@ -1,55 +1,31 @@
 {
   "shinyModules": [
   {
+    "order": 1,
     "id": "about", 
     "tabName": "About", 
     "tabText": "About",
+    "shinyModulePackage":"OhdsiShinyModules",
     "uiFunction": "aboutViewer",
     "serverFunction": "aboutServer",
-    "user": "jreps",
-    "repository": "shinyModuleViewer",
-    "branch": "master",
-    "moduleName": "about",
     "databaseConnectionKeyService": "null",
     "databaseConnectionKeyUsername": "null",
-    "order": 1,
-    "infoBoxFile": "About.html",
-    "icon": "info",
-    "dependencies": ["shiny", "dplyr"]
+    "infoBoxFile": "aboutHelperFile()",
+    "icon": "info"
   },
   
   {
+    "order": 2,
     "id": "prediction", 
     "tabName": "Prediction", 
     "tabText": "Prediction",
+    "shinyModulePackage":"OhdsiShinyModules",
     "uiFunction": "predictionViewer",
     "serverFunction": "predictionServer",
-    "user": "jreps",
-    "repository": "shinyModuleViewer",
-    "branch": "master",
-    "moduleName": "prediction",
     "databaseConnectionKeyService": "resultDatabaseSettings",
     "databaseConnectionKeyUsername": "lungcancer",
-    "order": 2,
-    "infoBoxFile": "Prediction.html",
+    "infoBoxFile": "predictionHelperFile()",
     "icon": "table"
-  },
-  
-  {
-    "id": "predictionDiagnostic", 
-    "tabName": "PredictionDiagnostic",
-    "tabText": "Prediction Diagnostic",
-    "uiFunction": "predictionDiagnosticViewer",
-    "serverFunction": "predictionDiagnosticServer",
-    "user": "jreps",
-    "repository": "shinyModuleViewer",
-    "branch": "master",
-    "moduleName": "predictionDiagnostic",
-    "databaseConnectionKeyService": "resultDatabaseSettings",
-    "databaseConnectionKeyUsername": "predictionDiagnostic",
-    "order": 3,
-    "infoBoxFile": "predictionDiagnostic.html",
-    "icon": "stethoscope"
   }
   
   ]

@@ -17,21 +17,12 @@ VignetteBuilder: knitr
 Depends:
   R (>= 3.3.0)
 Imports:
-  DT,
   dplyr,
-  gridExtra,
-  htmlwidgets (> 0.8),
-  htmltools,
-  jsonlite,
-  markdown,
+  glue,
   ParallelLogger (>= 2.0.0),
-  plotly,
   rlang,
-  shiny,
-  shinycssloaders,
-  shinydashboard,
-  shinyWidgets,
-  tidyr
+  tidyr,
+  OhdsiShinyModules
 Suggests:
   Eunomia,
   knitr,
@@ -40,5 +31,5 @@ Suggests:
 Remotes:
   ohdsi/Eunomia,
   ohdsi/ParallelLogger
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Encoding: UTF-8
