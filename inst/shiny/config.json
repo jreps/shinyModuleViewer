@@ -16,6 +16,48 @@
   
   {
     "order": 2,
+    "id": "cohortGenerator", 
+    "tabName": "CohortGenerator", 
+    "tabText": "CohortGenerator",
+    "shinyModulePackage":"OhdsiShinyModules",
+    "uiFunction": "cohortGeneratorViewer",
+    "serverFunction": "cohortGeneratorServer",
+    "databaseConnectionKeyService": "resultDatabaseSettings",
+    "databaseConnectionKeyUsername": "cohortGenerator",
+    "infoBoxFile": "cohortGeneratorHelperFile()",
+    "icon": "info"
+  },
+  
+   {
+    "order": 3,
+    "id": "description", 
+    "tabName": "Description", 
+    "tabText": "Description",
+    "shinyModulePackage":"OhdsiShinyModules",
+    "uiFunction": "descriptionViewer",
+    "serverFunction": "descriptionServer",
+    "databaseConnectionKeyService": "resultDatabaseSettings",
+    "databaseConnectionKeyUsername": "description",
+    "infoBoxFile": "descriptionHelperFile()",
+    "icon": "table"
+  },
+  
+  {
+    "order": 4,
+    "id": "estimation", 
+    "tabName": "Estimation", 
+    "tabText": "Estimation",
+    "shinyModulePackage":"OhdsiShinyModules",
+    "uiFunction": "estimationViewer",
+    "serverFunction": "estimationServer",
+    "databaseConnectionKeyService": "resultDatabaseSettings",
+    "databaseConnectionKeyUsername": "estimation",
+    "infoBoxFile": "estimationHelperFile()",
+    "icon": "table"
+  },
+  
+  {
+    "order": 5,
     "id": "prediction", 
     "tabName": "Prediction", 
     "tabText": "Prediction",
@@ -23,10 +65,12 @@
     "uiFunction": "predictionViewer",
     "serverFunction": "predictionServer",
     "databaseConnectionKeyService": "resultDatabaseSettings",
-    "databaseConnectionKeyUsername": "lungcancer",
+    "databaseConnectionKeyUsername": "prediction",
     "infoBoxFile": "predictionHelperFile()",
-    "icon": "table"
+    "icon": "chart-line"
   }
+  
+ 
   
   ]
 }

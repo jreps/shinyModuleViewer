@@ -1,8 +1,8 @@
 Package: shinyModuleViewer
 Type: Package
 Title: Viewing OHDSI results via shiny modules
-Version: 1.0.0
-Date: 2022-04-02
+Version: 1.0.1
+Date: 2022-07-02
 Authors@R: c(
   person("Jenna", "Reps", email = "jreps@its.jnj.com", role = c("aut", "cre")),
   person("Josh", "Ide", role = c("aut")),
@@ -30,6 +30,7 @@ Suggests:
   testthat
 Remotes:
   ohdsi/Eunomia,
-  ohdsi/ParallelLogger
-RoxygenNote: 7.2.0
+  ohdsi/ParallelLogger,
+  ohdsi/OhdsiShinyModules
+RoxygenNote: 7.2.1
 Encoding: UTF-8
