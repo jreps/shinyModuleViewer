@@ -19,7 +19,7 @@ addModuleConfig <- function(
 ){
   
   moduleConfig$order <- length(config)+1
-  config[[length(config)+1]] <- moduleConfig
+  config$shinyModules[[length(config$shinyModules)+1]] <- moduleConfig
   
   return(config)
   
@@ -39,5 +39,5 @@ addModuleConfig <- function(
 #' @export
 #' 
 initializeModuleConfig <- function(){
-  return(list())
+  return(list(shinyModules = list()))
 }

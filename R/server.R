@@ -1,7 +1,7 @@
 server <- function(config, connection){
   return(
   shiny::shinyServer(function(input, output, session) {
-  session$onSessionEnded(shiny::stopApp)
+  #session$onSessionEnded(shiny::stopApp)
   
   #config <-  tryCatch(
   #  {ParallelLogger::loadSettingsFromJson(Sys.getenv("config"))}, 
@@ -54,7 +54,7 @@ server <- function(config, connection){
     for(module in config$shinyModules){
       if(input$menu == module$tabName & runServer[[module$tabName]]==1){
         
-        if(module$databaseConnectionKeyService == 'null'){
+        if(is.null(module$databaseConnectionKeyService)){
           argsList <- list(
             id = module$id
           )
@@ -86,10 +86,10 @@ server <- function(config, connection){
             )
             
           }
+          # add the connection 
+          argsList$connectionHandler <- connection
         }
         
-        # add the connection 
-        argsList$connection <- connection
         
         # run the server
         do.call(

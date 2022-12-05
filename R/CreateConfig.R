@@ -50,29 +50,46 @@ createModuleConfig <- function(
     keyring = useKeyring
   )
   
-  if(useKeyring){
-  # setup key
-  keyring::key_set_with_value(
-    service = moduleDatabaseConnectionKeyService, 
-    username = moduleDatabaseConnectionKeyUsername, 
-    password = as.character(
-      jsonlite::toJSON(
-        resultDatabaseDetails
-      ))
+  if(!is.null(moduleDatabaseConnectionKeyService)){
+    if(useKeyring){
+      # setup key
+      keyring::key_set_with_value(
+        service = moduleDatabaseConnectionKeyService, 
+        username = moduleDatabaseConnectionKeyUsername, 
+        password = as.character(
+          jsonlite::toJSON(
+            resultDatabaseDetails
+          ))
       )
-  } else{
-    
-    var.name <- paste0(moduleDatabaseConnectionKeyService, '_', moduleDatabaseConnectionKeyUsername)
-    var.value <- jsonlite::toJSON(
-      resultDatabaseDetails
-    )
-    do.call(Sys.setenv, as.list(setNames(var.value, var.name)))
-
+    } else{
+      
+      var.name <- paste0(moduleDatabaseConnectionKeyService, '_', moduleDatabaseConnectionKeyUsername)
+      var.value <- jsonlite::toJSON(
+        resultDatabaseDetails
+      )
+      do.call(Sys.setenv, as.list(setNames(var.value, var.name)))
+      
+    }
   }
   
   return(result)
 }
 
+#' createDefaultAboutConfig
+#'
+#' @description
+#' Create an R list with the about config specification
+#'
+#' @details
+#' User specifies the settings to create a default config for an about module
+#' 
+#' @param resultDatabaseDetails  A list containing the result database schema (schema), the tablePrefix for the results and other optional settings
+#' @param useKeyring whether to save the resultDatabaseDetails to a keyring or system environmental variable
+#'                             
+#' @return
+#' An R list with the module config settings
+#'
+#' @export
 createDefaultAboutConfig <- function(
   resultDatabaseDetails,
   useKeyring = T
@@ -94,6 +111,21 @@ createDefaultAboutConfig <- function(
   return(result)
 }
 
+#' createDefaultPredictionConfig
+#'
+#' @description
+#' Create an R list with the prediction config specification
+#'
+#' @details
+#' User specifies the settings to create a default config for a prediction module
+#' 
+#' @param resultDatabaseDetails  A list containing the result database schema (schema), the tablePrefix for the results and other optional settings
+#' @param useKeyring whether to save the resultDatabaseDetails to a keyring or system environmental variable
+#'                             
+#' @return
+#' An R list with the module config settings
+#'
+#' @export
 createDefaultPredictionConfig <- function(
     resultDatabaseDetails = list(
       dbms = 'sqlite',
@@ -102,9 +134,9 @@ createDefaultPredictionConfig <- function(
       databaseTablePrefix = '',
       schema = 'main',
       databaseTable = 'DATABASE_META_DATA',
-      incidenceTablePrefix = 'i_',
+      incidenceTablePrefix = 'i_'
     ),
-    useKering = T
+    useKeyring = T
 ){
   
   result <- createModuleConfig(
@@ -123,6 +155,21 @@ createDefaultPredictionConfig <- function(
   return(result)
 }
 
+#' createDefaultEstimationConfig
+#'
+#' @description
+#' Create an R list with the estimation config specification
+#'
+#' @details
+#' User specifies the settings to create a default config for an estimation module
+#' 
+#' @param resultDatabaseDetails  A list containing the result database schema (schema), the tablePrefix for the results and other optional settings
+#' @param useKeyring whether to save the resultDatabaseDetails to a keyring or system environmental variable
+#'                             
+#' @return
+#' An R list with the module config settings
+#'
+#' @export
 createDefaultEstimationConfig <- function(
     resultDatabaseDetails = list(
       dbms = 'sqlite',
@@ -131,7 +178,7 @@ createDefaultEstimationConfig <- function(
       databaseTablePrefix = '',
       schema = 'main',
       databaseTable = 'DATABASE_META_DATA',
-      incidenceTablePrefix = 'i_',
+      incidenceTablePrefix = 'i_'
     ),
     useKeyring = T
 ){
@@ -152,6 +199,21 @@ createDefaultEstimationConfig <- function(
   return(result)
 }
 
+#' createDefaultCharacterizationConfig
+#'
+#' @description
+#' Create an R list with the characterization config specification
+#'
+#' @details
+#' User specifies the settings to create a default config for a characterization module
+#' 
+#' @param resultDatabaseDetails  A list containing the result database schema (schema), the tablePrefix for the results and other optional settings
+#' @param useKeyring whether to save the resultDatabaseDetails to a keyring or system environmental variable
+#'                             
+#' @return
+#' An R list with the module config settings
+#'
+#' @export
 createDefaultCharacterizationConfig <- function(
     resultDatabaseDetails = list(
       dbms = 'sqlite',
@@ -160,7 +222,7 @@ createDefaultCharacterizationConfig <- function(
       databaseTablePrefix = '',
       schema = 'main',
       databaseTable = 'DATABASE_META_DATA',
-      incidenceTablePrefix = 'i_',
+      incidenceTablePrefix = 'i_'
     ),
     useKeyring = T
 ){
@@ -182,7 +244,21 @@ createDefaultCharacterizationConfig <- function(
 }
 
 
-
+#' createDefaultCohortGeneratorConfig
+#'
+#' @description
+#' Create an R list with the cohort generator config specification
+#'
+#' @details
+#' User specifies the settings to create a default config for a cohort generator module
+#' 
+#' @param resultDatabaseDetails  A list containing the result database schema (schema), the tablePrefix for the results and other optional settings
+#' @param useKeyring whether to save the resultDatabaseDetails to a keyring or system environmental variable
+#'                             
+#' @return
+#' An R list with the module config settings
+#'
+#' @export
 createDefaultCohortGeneratorConfig <- function(
     resultDatabaseDetails = list(
       dbms = 'sqlite',
@@ -191,7 +267,7 @@ createDefaultCohortGeneratorConfig <- function(
       databaseTablePrefix = '',
       schema = 'main',
       databaseTable = 'DATABASE_META_DATA',
-      incidenceTablePrefix = 'i_',
+      incidenceTablePrefix = 'i_'
     ),
     useKeyring = T
 ){
