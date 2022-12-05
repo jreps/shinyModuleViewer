@@ -11,7 +11,8 @@
     "databaseConnectionKeyService": "null",
     "databaseConnectionKeyUsername": "null",
     "infoBoxFile": "aboutHelperFile()",
-    "icon": "info"
+    "icon": "info",
+    "keyring": true
   },
   
   {
@@ -25,7 +26,8 @@
     "databaseConnectionKeyService": "resultDatabaseSettings",
     "databaseConnectionKeyUsername": "cohortGenerator",
     "infoBoxFile": "cohortGeneratorHelperFile()",
-    "icon": "info"
+    "icon": "info",
+    "keyring": true
   },
   
    {
@@ -39,7 +41,8 @@
     "databaseConnectionKeyService": "resultDatabaseSettings",
     "databaseConnectionKeyUsername": "description",
     "infoBoxFile": "descriptionHelperFile()",
-    "icon": "table"
+    "icon": "table",
+    "keyring": true
   },
   
   {
@@ -53,7 +56,8 @@
     "databaseConnectionKeyService": "resultDatabaseSettings",
     "databaseConnectionKeyUsername": "estimation",
     "infoBoxFile": "estimationHelperFile()",
-    "icon": "table"
+    "icon": "table",
+    "keyring": true
   },
   
   {
@@ -67,7 +71,8 @@
     "databaseConnectionKeyService": "resultDatabaseSettings",
     "databaseConnectionKeyUsername": "prediction",
     "infoBoxFile": "predictionHelperFile()",
-    "icon": "chart-line"
+    "icon": "chart-line",
+    "keyring": true
   }
   
  

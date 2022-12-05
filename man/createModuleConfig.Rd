@@ -5,23 +5,41 @@
 \title{createModuleConfig}
 \usage{
 createModuleConfig(
-  connectionDetails,
   moduleId = "about",
   tabName = "About",
   shinyModulePackage = "OhdsiShinyModules",
   moduleUiFunction = "aboutViewer",
   moduleServerFunction = "aboutServer",
-  moduleDatabaseConnectionKeyService = NULL,
+  moduleDatabaseConnectionKeyService = "resultDatabaseDetails",
   moduleDatabaseConnectionKeyUsername = NULL,
   moduleInfoBoxFile = "aboutHelperFile()",
   moduleIcon = "info",
-  resultDatabaseDetails
+  resultDatabaseDetails,
+  useKeyring = TRUE
 )
 }
 \arguments{
-\item{configList}{An R list with the config settings}
+\item{moduleId}{The shiny id for the tab containing the module UI}
 
-\item{configLocation}{The location to save the config json file}
+\item{tabName}{The name of the tab in the shiny app (this will be the side menu button text)}
+
+\item{shinyModulePackage}{The R package to find the server and UI functions}
+
+\item{moduleUiFunction}{The name of the UI function in the R package shinyModulePackage}
+
+\item{moduleServerFunction}{The name of the server function in the R package shinyModulePackage}
+
+\item{moduleDatabaseConnectionKeyService}{The keyring service or the system environment variable with the result database details}
+
+\item{moduleDatabaseConnectionKeyUsername}{The keyring username or the system environment variable with the result database details}
+
+\item{moduleInfoBoxFile}{The function in the R package shinyModulePackage that contains info text}
+
+\item{moduleIcon}{The icon to use for the side menu button}
+
+\item{resultDatabaseDetails}{A list containing the result database schema (schema), the tablePrefix for the results and other optional settings}
+
+\item{useKeyring}{whether to save the resultDatabaseDetails to a keyring or system environmental variable}
 }
 \value{
 An R list with the module config settings

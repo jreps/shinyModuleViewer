@@ -1,4 +1,4 @@
-server <- function(config){
+server <- function(config, connection){
   return(
   shiny::shinyServer(function(input, output, session) {
   session$onSessionEnded(shiny::stopApp)
@@ -59,6 +59,10 @@ server <- function(config){
             id = module$id
           )
         } else{
+          
+          
+          if(module$keyring){
+            # use keyring
           argsList <- list(
             id = module$id,
             resultDatabaseSettings = jsonlite::fromJSON(
@@ -68,7 +72,24 @@ server <- function(config){
               )
             )
           )
+          } else{
+            # use environmental variables
+            argsList <- list(
+              id = module$id,
+              resultDatabaseSettings = jsonlite::fromJSON(
+                Sys.getenv(
+                  do.call(
+                    Sys.getenv, 
+                    list(paste0(module$databaseConnectionKeyService, '_', module$databaseConnectionKeyUsername)))
+                )
+              )
+            )
+            
+          }
         }
+        
+        # add the connection 
+        argsList$connection <- connection
         
         # run the server
         do.call(
