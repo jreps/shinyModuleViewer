@@ -77,13 +77,16 @@ server <- function(config, connection){
             argsList <- list(
               id = module$id,
               resultDatabaseSettings = jsonlite::fromJSON(
-                Sys.getenv(
-                  do.call(
-                    Sys.getenv, 
-                    list(paste0(module$databaseConnectionKeyService, '_', module$databaseConnectionKeyUsername)))
-                )
+                    Sys.getenv(
+                      paste0(
+                        module$databaseConnectionKeyService, 
+                        '_', 
+                        module$databaseConnectionKeyUsername
+                        )
+                      )
+                    )
               )
-            )
+            
             
           }
           # add the connection 
